@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+}
+
+enum AttendanceStatus {
+  CHECKED_IN
+  CHECKED_OUT
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Participant {
+  id             String   @id @default(uuid())
+  registerNumber String   @unique
+  name           String
+  email          String?
+  phone          String?
+  department     String?
+  year           String?
+  teamName       String?
+  hallName       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  attendances Attendance[]
+
+  @@index([registerNumber])
+}
+
+model Attendance {
+  id              String          @id @default(uuid())
+  participantId   String
+  participant     Participant     @relation(fields: [participantId], references: [id])
+  checkInDate     DateTime?
+  checkInTime     DateTime?
+  checkOutDate    DateTime?
+  checkOutTime    DateTime?
+  status          AttendanceStatus @default(CHECKED_IN)
+  checkInHall     String?
+  checkOutHall    String?
+  isLate          Boolean         @default(false)
+  isEarlyCheckout Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([participantId])
+  @@index([status])
+  @@index([checkInDate])
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  action         String
+  registerNumber String
+  timestamp      DateTime @default(now())
+  ipAddress      String?
+  userAgent      String?
+}
+
+model Hall {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  location  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
