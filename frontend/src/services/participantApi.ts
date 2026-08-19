@@ -18,4 +18,9 @@ export const participantApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+  exportCSV: (params?: Record<string, any>) =>
+    api.get('/participants/export', {
+      params,
+      responseType: 'blob',
+    }),
 };

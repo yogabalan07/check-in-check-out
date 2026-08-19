@@ -5,10 +5,13 @@ const reportService = new ReportService();
 
 export const getAttendanceReport = async (req: Request, res: Response) => {
   try {
-    const { type, date, hall, format } = req.query;
+    const { type, date, hall, format, department, year } = req.query;
 
     if (type === 'absent') {
-      const absent = await reportService.getAbsentParticipants();
+      const absent = await reportService.getAbsentParticipants({
+        department: department as string,
+        year: year as string,
+      });
 
       if (format === 'csv') {
         const csv = reportService.generateCSV(absent, 'absent');
@@ -35,6 +38,8 @@ export const getAttendanceReport = async (req: Request, res: Response) => {
       type: type as string,
       date: date as string,
       hall: hall as string,
+      department: department as string,
+      year: year as string,
     });
 
     if (format === 'csv') {

@@ -7,6 +7,7 @@ import {
   updateParticipant,
   deleteParticipant,
   importParticipants,
+  exportParticipants,
 } from '../controllers/participantController';
 import { authenticate } from '../middleware/auth';
 import { validate } from '../middleware/validate';
@@ -18,6 +19,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 
 router.use(authenticate);
 
 router.get('/', getParticipants);
+router.get('/export', exportParticipants);
 router.get('/:id', getParticipantById);
 router.post('/', validate(participantSchema), createParticipant);
 router.put('/:id', validate(participantUpdateSchema), updateParticipant);

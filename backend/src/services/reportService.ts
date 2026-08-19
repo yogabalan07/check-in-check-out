@@ -7,6 +7,8 @@ export class ReportService {
     type?: string;
     date?: string;
     hall?: string;
+    department?: string;
+    year?: string;
   }) {
     const where: any = {};
 
@@ -43,6 +45,17 @@ export class ReportService {
       ];
     }
 
+    const participantFilter: any = {};
+    if (filters.department) {
+      participantFilter.department = filters.department;
+    }
+    if (filters.year) {
+      participantFilter.year = filters.year;
+    }
+    if (Object.keys(participantFilter).length > 0) {
+      where.participant = participantFilter;
+    }
+
     const attendances = await prisma.attendance.findMany({
       where,
       include: { participant: true },
@@ -52,7 +65,7 @@ export class ReportService {
     return attendances;
   }
 
-  async getAbsentParticipants() {
+  async getAbsentParticipants(filters?: { department?: string; year?: string }) {
     const participantsWithAttendance = await prisma.attendance.findMany({
       select: { participantId: true },
       distinct: ['participantId'],
@@ -60,10 +73,18 @@ export class ReportService {
 
     const participantIds = participantsWithAttendance.map((a) => a.participantId);
 
+    const where: any = {
+      id: participantIds.length > 0 ? { notIn: participantIds } : undefined,
+    };
+    if (filters?.department) {
+      where.department = filters.department;
+    }
+    if (filters?.year) {
+      where.year = filters.year;
+    }
+
     const absentParticipants = await prisma.participant.findMany({
-      where: {
-        id: participantIds.length > 0 ? { notIn: participantIds } : undefined,
-      },
+      where,
       orderBy: { registerNumber: 'asc' },
     });
 

@@ -1,17 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { dashboardApi } from '../services/reportApi';
 import { DashboardStats, Attendance } from '../types';
+import StatCard from '../components/ui/StatCard';
+import { StatusBadge, FlagBadges } from '../components/ui/StatusBadge';
+import Spinner from '../components/ui/Spinner';
+import EmptyState from '../components/ui/EmptyState';
+import { FiRefreshCw } from 'react-icons/fi';
 
 const Dashboard = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recent, setRecent] = useState<Attendance[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [statsRes, recentRes] = await Promise.all([
         dashboardApi.getStats(),
@@ -24,15 +26,26 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!loading) loadData();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [loadData, loading]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  if (loading) return <Spinner />;
 
   const statCards = [
     { label: 'Total Participants', value: stats?.totalParticipants || 0, color: 'bg-blue-500', textColor: 'text-blue-600' },
@@ -46,17 +59,21 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg text-sm"
+        >
+          <FiRefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4 mb-8">
         {statCards.map((card) => (
-          <div key={card.label} className="bg-white rounded-xl shadow-sm p-6">
-            <div className={`w-10 h-10 ${card.color} rounded-lg flex items-center justify-center mb-3`}>
-              <span className="text-white font-bold text-sm">{card.value}</span>
-            </div>
-            <p className="text-sm text-gray-500">{card.label}</p>
-            <p className={`text-2xl font-bold ${card.textColor}`}>{card.value}</p>
-          </div>
+          <StatCard key={card.label} {...card} />
         ))}
       </div>
 
@@ -87,37 +104,19 @@ const Dashboard = () => {
                     {att.checkOutTime ? new Date(att.checkOutTime).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) : '-'}
                   </td>
                   <td className="py-3 px-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      att.status === 'CHECKED_IN' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'
-                    }`}>
-                      {att.status === 'CHECKED_IN' ? 'CHECKED IN' : 'CHECKED OUT'}
-                    </span>
+                    <StatusBadge status={att.status} />
                   </td>
                   <td className="py-3 px-2">{att.checkInHall || '-'}</td>
                   <td className="py-3 px-2">
-                    <div className="flex flex-wrap gap-1">
-                      {att.isLate && (
-                        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
-                          LATE
-                        </span>
-                      )}
-                      {att.isEarlyCheckout && (
-                        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
-                          EARLY OUT
-                        </span>
-                      )}
-                      {!att.isLate && !att.isEarlyCheckout && (
-                        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                          ON TIME
-                        </span>
-                      )}
-                    </div>
+                    <FlagBadges isLate={att.isLate} isEarlyCheckout={att.isEarlyCheckout} />
                   </td>
                 </tr>
               ))}
               {recent.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-gray-500">No attendance records yet</td>
+                  <td colSpan={7}>
+                    <EmptyState message="No attendance records yet" />
+                  </td>
                 </tr>
               )}
             </tbody>

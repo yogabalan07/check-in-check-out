@@ -41,3 +41,16 @@ export const hallSchema = z.object({
   name: z.string().min(1, 'Hall name is required').trim(),
   location: z.string().optional().or(z.literal('')),
 });
+
+export const settingsSchema = z.object({
+  hackathonName: z.string().min(1, 'Hackathon name is required').trim().optional(),
+  startTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Start time must be in HH:MM format')
+    .optional(),
+  endTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'End time must be in HH:MM format')
+    .optional(),
+  timezone: z.string().min(1, 'Timezone is required').trim().optional(),
+});

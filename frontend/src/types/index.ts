@@ -78,3 +78,10 @@ export interface ImportResult {
     reason: string;
   }>;
 }
+
+export interface HackathonSettings {
+  hackathonName: string;
+  startTime: string;
+  endTime: string;
+  timezone: string;
+}

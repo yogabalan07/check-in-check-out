@@ -11,6 +11,7 @@ import hallRoutes from './routes/hallRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import reportRoutes from './routes/reportRoutes';
 import qrRoutes from './routes/qrRoutes';
+import settingsRoutes from './routes/settingsRoutes';
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use('/api/halls', hallRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/qr', qrRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

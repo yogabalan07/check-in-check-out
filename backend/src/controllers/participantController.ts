@@ -126,6 +126,27 @@ export const deleteParticipant = async (req: Request, res: Response) => {
   }
 };
 
+export const exportParticipants = async (req: Request, res: Response) => {
+  try {
+    const { search } = req.query;
+    const participants = await participantService.getAllForExport(search as string);
+    const csv = participantService.exportCSV(participants);
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=participants.csv'
+    );
+    return res.send(csv);
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: 'Error exporting participants',
+      errorCode: 'EXPORT_ERROR',
+    });
+  }
+};
+
 export const importParticipants = async (req: Request, res: Response) => {
   try {
     if (!req.file) {

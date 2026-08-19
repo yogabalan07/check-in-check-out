@@ -21,15 +21,23 @@ function getTimeInTimezoneMinutes(date: Date, timezone: string): number {
   return hours * 60 + minutes;
 }
 
-export function isLateCheckIn(checkInTime: Date): boolean {
-  const checkInMinutes = getTimeInTimezoneMinutes(checkInTime, config.timezone);
-  const startMinutes = parseTimeToMinutes(config.hackathonStartTime);
+export function isLateCheckIn(
+  checkInTime: Date,
+  startTime: string = config.hackathonStartTime,
+  timezone: string = config.timezone
+): boolean {
+  const checkInMinutes = getTimeInTimezoneMinutes(checkInTime, timezone);
+  const startMinutes = parseTimeToMinutes(startTime);
   return checkInMinutes > startMinutes;
 }
 
-export function isEarlyCheckOut(checkOutTime: Date): boolean {
-  const checkOutMinutes = getTimeInTimezoneMinutes(checkOutTime, config.timezone);
-  const endMinutes = parseTimeToMinutes(config.hackathonEndTime);
+export function isEarlyCheckOut(
+  checkOutTime: Date,
+  endTime: string = config.hackathonEndTime,
+  timezone: string = config.timezone
+): boolean {
+  const checkOutMinutes = getTimeInTimezoneMinutes(checkOutTime, timezone);
+  const endMinutes = parseTimeToMinutes(endTime);
   return checkOutMinutes < endMinutes;
 }
 

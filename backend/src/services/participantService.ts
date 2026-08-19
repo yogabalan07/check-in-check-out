@@ -1,6 +1,7 @@
 import prisma from '../config/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { normalizeRegisterNumber } from '../utils';
+import { stringify } from 'csv-stringify/sync';
 
 export class ParticipantService {
   async create(data: {
@@ -95,6 +96,38 @@ export class ParticipantService {
     }
 
     return participant;
+  }
+
+  async getAllForExport(search?: string) {
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { registerNumber: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { teamName: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    return prisma.participant.findMany({
+      where,
+      orderBy: { registerNumber: 'asc' },
+    });
+  }
+
+  exportCSV(participants: Array<Record<string, any>>) {
+    const rows = participants.map((p) => ({
+      'Register Number': p.registerNumber,
+      Name: p.name,
+      Email: p.email || '',
+      Phone: p.phone || '',
+      Department: p.department || '',
+      Year: p.year || '',
+      'Team Name': p.teamName || '',
+      Hall: p.hallName || '',
+    }));
+    return stringify(rows, { header: true });
   }
 
   async update(id: string, data: Record<string, any>) {

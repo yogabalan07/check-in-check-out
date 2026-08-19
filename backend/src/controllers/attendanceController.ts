@@ -72,6 +72,8 @@ export const getAttendances = async (req: Request, res: Response) => {
       search,
       sortBy,
       sortOrder,
+      late,
+      early,
     } = req.query;
 
     const result = await attendanceService.getAttendances({
@@ -83,6 +85,8 @@ export const getAttendances = async (req: Request, res: Response) => {
       search: search as string,
       sortBy: sortBy as string,
       sortOrder: sortOrder as 'asc' | 'desc',
+      late: late as string,
+      early: early as string,
     });
 
     return res.json({

@@ -1,6 +1,7 @@
 import prisma from '../config/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { isLateCheckIn, isEarlyCheckOut, normalizeRegisterNumber } from '../utils';
+import { getHackathonSettings } from './settingsService';
 
 export class AttendanceService {
   async checkIn(registerNumber: string, hall?: string, ip?: string, userAgent?: string) {
@@ -15,6 +16,7 @@ export class AttendanceService {
     }
 
     const now = new Date();
+    const settings = await getHackathonSettings();
 
     // Use transaction to prevent duplicate check-ins
     const attendance = await prisma.$transaction(async (tx) => {
@@ -34,7 +36,7 @@ export class AttendanceService {
         );
       }
 
-      const late = isLateCheckIn(now);
+      const late = isLateCheckIn(now, settings.startTime, settings.timezone);
 
       const newAttendance = await tx.attendance.create({
         data: {
@@ -86,6 +88,7 @@ export class AttendanceService {
     }
 
     const now = new Date();
+    const settings = await getHackathonSettings();
 
     const attendance = await prisma.$transaction(async (tx) => {
       const existingAttendance = await tx.attendance.findFirst({
@@ -103,7 +106,7 @@ export class AttendanceService {
         );
       }
 
-      const early = isEarlyCheckOut(now);
+      const early = isEarlyCheckOut(now, settings.endTime, settings.timezone);
 
       const updatedAttendance = await tx.attendance.update({
         where: { id: existingAttendance.id },
@@ -155,6 +158,8 @@ export class AttendanceService {
     search?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    late?: string;
+    early?: string;
   }) {
     const {
       page = 1,
@@ -195,6 +200,13 @@ export class AttendanceService {
           { name: { contains: search, mode: 'insensitive' } },
         ],
       };
+    }
+
+    if (params.late === 'true') {
+      where.isLate = true;
+    }
+    if (params.early === 'true') {
+      where.isEarlyCheckout = true;
     }
 
     const skip = (page - 1) * limit;
