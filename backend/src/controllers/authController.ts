@@ -23,6 +23,7 @@ export const login = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
+    console.error('[auth] login error:', error);
     return res.status(500).json({
       success: false,
       message: 'Internal server error',

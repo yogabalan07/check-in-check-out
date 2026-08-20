@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { config } from './config';
 import { errorHandler } from './middleware/errorHandler';
 import { globalLimiter } from './middleware/rateLimit';
+import prisma from './config/prisma';
 import authRoutes from './routes/authRoutes';
 import attendanceRoutes from './routes/attendanceRoutes';
 import participantRoutes from './routes/participantRoutes';
@@ -58,11 +59,18 @@ app.get('/', (_req, res) => {
   });
 });
 
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', async (_req, res) => {
+  let database: { status: string; code?: string } = { status: 'ok' };
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+  } catch (error: any) {
+    database = { status: 'error', code: error?.code || 'UNKNOWN' };
+  }
   res.json({
     success: true,
     message: 'Server is running',
     uptime: process.uptime(),
+    database,
   });
 });
 

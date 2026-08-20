@@ -24,6 +24,7 @@ export const checkIn = async (req: Request, res: Response) => {
         errorCode: error.errorCode,
       });
     }
+    console.error('[attendance] check-in error:', error);
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -53,6 +54,7 @@ export const checkOut = async (req: Request, res: Response) => {
         errorCode: error.errorCode,
       });
     }
+    console.error('[attendance] check-out error:', error);
     return res.status(500).json({
       success: false,
       message: 'Internal server error',

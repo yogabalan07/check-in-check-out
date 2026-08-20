@@ -25,7 +25,7 @@ export const errorHandler = (
     });
   }
 
-  console.error('Unhandled error:', err);
+  console.error(`Unhandled error on ${req.method} ${req.originalUrl}:`, err);
   return res.status(500).json({
     success: false,
     message: 'Internal server error',
