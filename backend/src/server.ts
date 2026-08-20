@@ -61,15 +61,8 @@ app.get('/', (_req, res) => {
 
 const dbProbeTimeoutMs = 3000;
 
-function sanitizeDbMessage(message: string): string {
-  if (!config.databaseUrl) return message;
-  const m = config.databaseUrl.match(/^postgres(?:ql)?:\/\/([^:@]+):([^@]*)@/i);
-  if (m && m[2]) return message.split(m[2]).join('[REDACTED]');
-  return message;
-}
-
 app.get('/api/health', async (_req, res) => {
-  let database: { status: string; code?: string; detail?: string; host?: string } = { status: 'ok' };
+  let database: { status: string; code?: string } = { status: 'ok' };
   try {
     await Promise.race([
       prisma.$queryRaw`SELECT 1`,
@@ -78,19 +71,7 @@ app.get('/api/health', async (_req, res) => {
       ),
     ]);
   } catch (error: any) {
-    database = {
-      status: 'error',
-      code: error?.code || 'TIMEOUT',
-      detail: sanitizeDbMessage(String(error?.message || error || 'unknown error')),
-      host: (() => {
-        try {
-          const u = new URL(config.databaseUrl);
-          return u.hostname + ':' + (u.port || '5432');
-        } catch {
-          return 'unparseable';
-        }
-      })(),
-    };
+    database = { status: 'error', code: error?.code || 'TIMEOUT' };
   }
   res.json({
     success: true,
