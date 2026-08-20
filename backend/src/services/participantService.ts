@@ -199,13 +199,14 @@ export class ParticipantService {
     for (let i = 0; i < participants.length; i++) {
       const p = participants[i];
       try {
-        const normalizedRegNum = normalizeRegisterNumber(p.registerNumber);
+        const normalizedRegNum = normalizeRegisterNumber(String(p.registerNumber ?? ''));
+        const name = String(p.name ?? '').trim();
 
-        if (!normalizedRegNum || !p.name) {
+        if (!normalizedRegNum || !name) {
           results.errors.push({
             row: i + 1,
-            registerNumber: p.registerNumber,
-            reason: 'Missing required fields (registerNumber, name)',
+            registerNumber: normalizedRegNum || '-',
+            reason: !normalizedRegNum ? 'Missing Register Number' : 'Missing Name',
           });
           results.failed++;
           continue;
@@ -228,7 +229,7 @@ export class ParticipantService {
         await prisma.participant.create({
           data: {
             registerNumber: normalizedRegNum,
-            name: p.name,
+            name: name,
             email: p.email || null,
             phone: p.phone || null,
             department: p.department || null,
@@ -242,7 +243,7 @@ export class ParticipantService {
       } catch (error: any) {
         results.errors.push({
           row: i + 1,
-          registerNumber: p.registerNumber,
+          registerNumber: String(p.registerNumber ?? '').trim() || '-',
           reason: error.message || 'Unknown error',
         });
         results.failed++;

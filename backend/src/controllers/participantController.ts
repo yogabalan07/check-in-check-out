@@ -4,6 +4,45 @@ import { parse } from 'csv-parse/sync';
 
 const participantService = new ParticipantService();
 
+// Canonical aliases for each expected participant field. Keys/aliases are
+// compared case-insensitively and ignoring spaces, underscores, dashes, dots.
+const HEADER_ALIASES: Record<string, string[]> = {
+  registerNumber: ['registernumber', 'registerno', 'regno', 'rollnumber', 'rollno', 'id'],
+  name: ['name', 'fullname', 'studentname', 'participantname'],
+  email: ['email', 'emailaddress', 'mail'],
+  phone: ['phone', 'phonenumber', 'mobile', 'mobilenumber', 'contact'],
+  department: ['department', 'dept', 'branch'],
+  year: ['year', 'yearofstudy', 'batch', 'semester'],
+  teamName: ['teamname', 'team', 'teamnamefield'],
+  hallName: ['hallname', 'hall', 'venue'],
+};
+
+const REQUIRED_HEADERS = ['registerNumber', 'name'];
+const REQUIRED_HEADER_LABELS: Record<string, string> = {
+  registerNumber: 'Register Number',
+  name: 'Name',
+};
+
+function canonicalizeHeader(header: string): string {
+  return header.trim().toLowerCase().replace(/[\s_\-./]+/g, '');
+}
+
+function normalizeHeader(header: string): string {
+  const key = canonicalizeHeader(header);
+  for (const [field, aliases] of Object.entries(HEADER_ALIASES)) {
+    if (aliases.includes(key)) return field;
+  }
+  return header;
+}
+
+function normalizeRecord(record: Record<string, any>): Record<string, any> {
+  const out: Record<string, any> = {};
+  for (const [rawKey, value] of Object.entries(record)) {
+    out[normalizeHeader(rawKey)] = value;
+  }
+  return out;
+}
+
 export const createParticipant = async (req: Request, res: Response) => {
   try {
     const participant = await participantService.create(req.body);
@@ -157,14 +196,32 @@ export const importParticipants = async (req: Request, res: Response) => {
       });
     }
 
-    const csvContent = req.file.buffer.toString('utf-8');
+    const csvContent = req.file.buffer.toString('utf-8').replace(/^\uFEFF/, '');
     const records = parse(csvContent, {
       columns: true,
       skip_empty_lines: true,
       trim: true,
+      bom: true,
     });
 
-    const result = await participantService.importBulk(records);
+    const normalizedRecords = records.map(normalizeRecord);
+
+    const headerFields = normalizedRecords.length > 0
+      ? new Set(Object.keys(normalizedRecords[0]).map(normalizeHeader))
+      : new Set<string>();
+
+    const missingRequired = REQUIRED_HEADERS.filter((field) => !headerFields.has(field));
+    if (missingRequired.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `CSV is missing required column: ${missingRequired
+          .map((field) => REQUIRED_HEADER_LABELS[field])
+          .join(', ')}`,
+        errorCode: 'INVALID_CSV_HEADERS',
+      });
+    }
+
+    const result = await participantService.importBulk(normalizedRecords);
 
     return res.json({
       success: true,
