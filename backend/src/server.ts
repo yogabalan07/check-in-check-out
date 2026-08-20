@@ -15,17 +15,22 @@ import settingsRoutes from './routes/settingsRoutes';
 
 const app = express();
 
+// Render sits behind a proxy; trust it so rate limiting and req.ip work.
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || config.corsOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(null, false);
-  },
-  credentials: true,
+  origin: config.corsOrigins,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Safety net: any OPTIONS preflight that reaches Express is answered with 204
+// (CORS headers are attached by the cors middleware above).
+app.options('*', (_req, res) => {
+  res.sendStatus(204);
+});
 
 // Rate limiting (high global safety cap; stricter limits applied per route)
 app.use(globalLimiter);
