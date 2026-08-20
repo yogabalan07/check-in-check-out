@@ -10,11 +10,15 @@ if (existsSync(envPath)) {
 const defaultFrontendUrl = 'http://localhost:5173';
 const productionFrontendUrl = 'https://check-in-check-out-nhav.onrender.com';
 
+function normalizeOrigin(origin: string): string {
+  return origin.trim().replace(/\/+$/, '');
+}
+
 function buildCorsOrigins(): string[] {
   const origins = new Set<string>();
 
   if (process.env.FRONTEND_URL) {
-    origins.add(process.env.FRONTEND_URL.trim());
+    origins.add(normalizeOrigin(process.env.FRONTEND_URL));
   }
 
   // Local development origins
@@ -27,7 +31,7 @@ function buildCorsOrigins(): string[] {
 
   if (process.env.CORS_ORIGINS) {
     for (const origin of process.env.CORS_ORIGINS.split(',')) {
-      const trimmed = origin.trim();
+      const trimmed = normalizeOrigin(origin);
       if (trimmed) origins.add(trimmed);
     }
   }

@@ -59,12 +59,19 @@ app.get('/', (_req, res) => {
   });
 });
 
+const dbProbeTimeoutMs = 3000;
+
 app.get('/api/health', async (_req, res) => {
   let database: { status: string; code?: string } = { status: 'ok' };
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    await Promise.race([
+      prisma.$queryRaw`SELECT 1`,
+      new Promise((_resolve, reject) =>
+        setTimeout(() => reject(new Error('DB probe timed out')), dbProbeTimeoutMs)
+      ),
+    ]);
   } catch (error: any) {
-    database = { status: 'error', code: error?.code || 'UNKNOWN' };
+    database = { status: 'error', code: error?.code || 'TIMEOUT' };
   }
   res.json({
     success: true,
@@ -79,6 +86,8 @@ app.use(errorHandler);
 
 app.listen(config.port, () => {
   console.log(`Server running on port ${config.port}`);
+  console.log(`CORS allowed origins: ${JSON.stringify(config.corsOrigins)}`);
+  console.log(`FRONTEND_URL set: ${Boolean(process.env.FRONTEND_URL)} (${config.frontendUrl})`);
 });
 
 export default app;
