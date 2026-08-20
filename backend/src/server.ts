@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import { config } from './config';
 import { errorHandler } from './middleware/errorHandler';
 import { globalLimiter } from './middleware/rateLimit';
-import prisma from './config/prisma';
+import prisma, { prismaDatabaseHost } from './config/prisma';
 import authRoutes from './routes/authRoutes';
 import attendanceRoutes from './routes/attendanceRoutes';
 import participantRoutes from './routes/participantRoutes';
@@ -88,6 +88,7 @@ app.listen(config.port, () => {
   console.log(`Server running on port ${config.port}`);
   console.log(`CORS allowed origins: ${JSON.stringify(config.corsOrigins)}`);
   console.log(`FRONTEND_URL set: ${Boolean(process.env.FRONTEND_URL)} (${config.frontendUrl})`);
+  console.log(`Resolved DB host: ${prismaDatabaseHost}`);
 });
 
 export default app;
