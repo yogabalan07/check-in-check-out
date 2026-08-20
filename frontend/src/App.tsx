@@ -28,6 +28,7 @@ function App() {
             </ProtectedRoute>
           }
         >
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="participants" element={<Participants />} />
           <Route path="attendance" element={<Attendance />} />
