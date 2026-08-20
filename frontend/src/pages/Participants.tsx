@@ -64,6 +64,7 @@ const Participants = () => {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const isFirstRender = useRef(true);
 
   const loadParticipants = async (p = page, s = search) => {
     setLoading(true);
@@ -90,12 +91,26 @@ const Participants = () => {
   }, []);
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     const t = setTimeout(() => {
       setPage(1);
       loadParticipants(1, search);
     }, 400);
     return () => clearTimeout(t);
   }, [search]);
+
+  const openDetail = async (p: Participant) => {
+    setDetail(p as Participant & { attendances?: Attendance[] });
+    try {
+      const res = await participantApi.getById(p.id);
+      setDetail(res.data.data);
+    } catch {
+      toast.error('Failed to load participant details');
+    }
+  };
 
   const openCreate = () => {
     setEditing(null);
@@ -265,7 +280,7 @@ const Participants = () => {
                   <td className="py-3 px-4">
                     <div className="flex justify-end gap-2">
                       <button
-                        onClick={() => setDetail(p as any)}
+                        onClick={() => openDetail(p)}
                         className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
                         title="View"
                       >

@@ -7,12 +7,14 @@ import {
   deleteHall,
 } from '../controllers/hallController';
 import { authenticate } from '../middleware/auth';
+import { adminLimiter } from '../middleware/rateLimit';
 import { validate } from '../middleware/validate';
 import { hallSchema } from '../validators';
 
 const router = Router();
 
 router.use(authenticate);
+router.use(adminLimiter);
 
 router.get('/', getHalls);
 router.get('/:id', getHallById);

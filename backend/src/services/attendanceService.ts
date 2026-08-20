@@ -204,9 +204,13 @@ export class AttendanceService {
 
     if (params.late === 'true') {
       where.isLate = true;
+    } else if (params.late === 'false') {
+      where.isLate = false;
     }
     if (params.early === 'true') {
       where.isEarlyCheckout = true;
+    } else if (params.early === 'false') {
+      where.isEarlyCheckout = false;
     }
 
     const skip = (page - 1) * limit;

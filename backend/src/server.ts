@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import { config } from './config';
 import { errorHandler } from './middleware/errorHandler';
+import { globalLimiter } from './middleware/rateLimit';
 import authRoutes from './routes/authRoutes';
 import attendanceRoutes from './routes/attendanceRoutes';
 import participantRoutes from './routes/participantRoutes';
@@ -22,17 +22,8 @@ app.use(cors({
   credentials: true,
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: {
-    success: false,
-    message: 'Too many requests, please try again later',
-    errorCode: 'RATE_LIMIT',
-  },
-});
-app.use(limiter);
+// Rate limiting (high global safety cap; stricter limits applied per route)
+app.use(globalLimiter);
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));

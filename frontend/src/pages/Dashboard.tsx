@@ -34,10 +34,10 @@ const Dashboard = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!loading) loadData();
+      loadData();
     }, 30000);
     return () => clearInterval(interval);
-  }, [loadData, loading]);
+  }, [loadData]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
