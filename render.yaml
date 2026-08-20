@@ -19,9 +19,9 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: FRONTEND_URL
-        sync: false
+        value: https://check-in-check-out-nhav.onrender.com
       - key: CORS_ORIGINS
-        sync: false
+        value: http://localhost:5173,https://check-in-check-out-nhav.onrender.com
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD
@@ -41,7 +41,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        sync: false
+        value: https://check-in-out-s0r8.onrender.com/api
     routes:
       - type: rewrite
         source: /*
