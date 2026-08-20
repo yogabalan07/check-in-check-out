@@ -18,7 +18,12 @@ const app = express();
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: config.frontendUrl,
+  origin: (origin, callback) => {
+    if (!origin || config.corsOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
   credentials: true,
 }));
 
@@ -40,8 +45,20 @@ app.use('/api/qr', qrRoutes);
 app.use('/api/settings', settingsRoutes);
 
 // Health check
+app.get('/', (_req, res) => {
+  res.json({
+    success: true,
+    name: 'Hackathon Attendance API',
+    health: '/api/health',
+  });
+});
+
 app.get('/api/health', (_req, res) => {
-  res.json({ success: true, message: 'Server is running' });
+  res.json({
+    success: true,
+    message: 'Server is running',
+    uptime: process.uptime(),
+  });
 });
 
 // Error handler
