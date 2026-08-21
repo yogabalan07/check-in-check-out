@@ -14,8 +14,21 @@ function toSupabasePoolerUrl(raw: string): string {
   const [, user, password, ref, dbName, query] = m;
   const host = process.env.SUPABASE_POOLER_HOST || 'aws-0-ap-southeast-1.pooler.supabase.com';
   const base = `postgresql://${user}.${ref}:${password}@${host}:6543/${dbName}`;
-  const params = query ? `${query.slice(1)}&pgbouncer=true` : 'pgbouncer=true';
-  return `${base}?${params}`;
+  // pgbouncer=true disables prepared statements (required for Supavisor
+  // transaction mode). connection_limit keeps the client pool bounded so a
+  // burst of concurrent check-ins queues instead of exhausting Supavisor;
+  // override with PRISMA_CONNECTION_LIMIT / PRISMA_POOL_TIMEOUT if needed.
+  const extra = [
+    'pgbouncer=true',
+    `connection_limit=${process.env.PRISMA_CONNECTION_LIMIT || '10'}`,
+    `pool_timeout=${process.env.PRISMA_POOL_TIMEOUT || '10'}`,
+  ];
+  const existing = new URLSearchParams(query ? query.slice(1) : '');
+  for (const kv of extra) {
+    const [k, v] = kv.split('=');
+    if (!existing.has(k)) existing.set(k, v);
+  }
+  return `${base}?${existing.toString()}`;
 }
 
 const rawUrl = process.env.DATABASE_URL;

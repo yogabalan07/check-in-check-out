@@ -196,55 +196,116 @@ export class ParticipantService {
       errors: [] as Array<{ row: number; registerNumber: string; reason: string }>,
     };
 
+    // Pass 1 (no DB access): normalize and validate every row.
+    const valid: Array<{
+      row: number;
+      registerNumber: string;
+      name: string;
+      email: string | null;
+      phone: string | null;
+      department: string | null;
+      year: string | null;
+      teamName: string | null;
+      hallName: string | null;
+    }> = [];
+
     for (let i = 0; i < participants.length; i++) {
       const p = participants[i];
-      try {
-        const normalizedRegNum = normalizeRegisterNumber(String(p.registerNumber ?? ''));
-        const name = String(p.name ?? '').trim();
+      const normalizedRegNum = normalizeRegisterNumber(String(p.registerNumber ?? ''));
+      const name = String(p.name ?? '').trim();
 
-        if (!normalizedRegNum || !name) {
-          results.errors.push({
-            row: i + 1,
-            registerNumber: normalizedRegNum || '-',
-            reason: !normalizedRegNum ? 'Missing Register Number' : 'Missing Name',
-          });
-          results.failed++;
-          continue;
-        }
-
-        const existing = await prisma.participant.findUnique({
-          where: { registerNumber: normalizedRegNum },
-        });
-
-        if (existing) {
-          results.errors.push({
-            row: i + 1,
-            registerNumber: normalizedRegNum,
-            reason: 'Register number already exists',
-          });
-          results.failed++;
-          continue;
-        }
-
-        await prisma.participant.create({
-          data: {
-            registerNumber: normalizedRegNum,
-            name: name,
-            email: p.email || null,
-            phone: p.phone || null,
-            department: p.department || null,
-            year: p.year || null,
-            teamName: p.teamName || null,
-            hallName: p.hallName || null,
-          },
-        });
-
-        results.imported++;
-      } catch (error: any) {
+      if (!normalizedRegNum || !name) {
         results.errors.push({
           row: i + 1,
-          registerNumber: String(p.registerNumber ?? '').trim() || '-',
-          reason: error.message || 'Unknown error',
+          registerNumber: normalizedRegNum || '-',
+          reason: !normalizedRegNum ? 'Missing Register Number' : 'Missing Name',
+        });
+        results.failed++;
+        continue;
+      }
+
+      valid.push({
+        row: i + 1,
+        registerNumber: normalizedRegNum,
+        name,
+        email: p.email || null,
+        phone: p.phone || null,
+        department: p.department || null,
+        year: p.year || null,
+        teamName: p.teamName || null,
+        hallName: p.hallName || null,
+      });
+    }
+
+    if (valid.length === 0) {
+      return results;
+    }
+
+    // Pass 2: one indexed query for ALL existing register numbers instead of
+    // one findUnique per row (N+1 eliminated).
+    const existingRows = await prisma.participant.findMany({
+      where: { registerNumber: { in: valid.map((v) => v.registerNumber) } },
+      select: { registerNumber: true },
+    });
+    const existing = new Set(existingRows.map((r) => r.registerNumber));
+
+    // Pass 3: drop DB duplicates and duplicates inside the file itself.
+    const seen = new Set<string>();
+    const toCreate: typeof valid = [];
+
+    for (const v of valid) {
+      if (existing.has(v.registerNumber)) {
+        results.errors.push({
+          row: v.row,
+          registerNumber: v.registerNumber,
+          reason: 'Register number already exists',
+        });
+        results.failed++;
+        continue;
+      }
+      if (seen.has(v.registerNumber)) {
+        results.errors.push({
+          row: v.row,
+          registerNumber: v.registerNumber,
+          reason: 'Duplicate register number in file',
+        });
+        results.failed++;
+        continue;
+      }
+      seen.add(v.registerNumber);
+      toCreate.push(v);
+    }
+
+    if (toCreate.length === 0) {
+      return results;
+    }
+
+    // Pass 4: single batch insert. skipDuplicates guards against a
+    // concurrent import inserting the same register number mid-flight.
+    const created = await prisma.participant.createMany({
+      data: toCreate.map((v) => ({
+        registerNumber: v.registerNumber,
+        name: v.name,
+        email: v.email,
+        phone: v.phone,
+        department: v.department,
+        year: v.year,
+        teamName: v.teamName,
+        hallName: v.hallName,
+      })),
+      skipDuplicates: true,
+    });
+
+    results.imported = created.count;
+
+    // Rows lost to a concurrent insert are reported as failures so the
+    // counts always add up to total.
+    if (created.count < toCreate.length) {
+      for (const v of toCreate.slice(created.count)) {
+        results.errors.push({
+          row: v.row,
+          registerNumber: v.registerNumber,
+          reason: 'Register number already exists',
         });
         results.failed++;
       }

@@ -40,8 +40,6 @@ model Participant {
   updatedAt      DateTime @updatedAt
 
   attendances Attendance[]
-
-  @@index([registerNumber])
 }
 
 model Attendance {
@@ -60,9 +58,18 @@ model Attendance {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
-  @@index([participantId])
-  @@index([status])
+  // (participantId, status) serves the hot lookup "active attendance for a
+  // participant" used by check-in, check-out, dashboard and reports.
+  @@index([participantId, status])
+  // Supports the default createdAt DESC ordering / pagination.
+  @@index([createdAt])
   @@index([checkInDate])
+
+  // NOTE: a partial unique index enforcing ONE active check-in per participant
+  // cannot be expressed in Prisma schema. It is created in migration
+  // 20260821000000_concurrency_safety:
+  //   CREATE UNIQUE INDEX "Attendance_participantId_checkedIn_key"
+  //     ON "Attendance"("participantId") WHERE "status" = 'CHECKED_IN';
 }
 
 model AuditLog {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { attendanceApi } from '../services/attendanceApi';
@@ -10,14 +10,19 @@ const CheckOutPage = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
+  // Ref guard: blocks double clicks / repeated Enter presses that fire before
+  // the loading state re-renders. Only one POST can ever be in flight.
+  const submittingRef = useRef(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current) return;
     if (!registerNumber.trim()) {
       toast.error('Please enter your register number');
       return;
     }
 
+    submittingRef.current = true;
     setLoading(true);
     setError('');
     setResult(null);
@@ -31,6 +36,7 @@ const CheckOutPage = () => {
       setError(msg);
       toast.error(msg);
     } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   };
