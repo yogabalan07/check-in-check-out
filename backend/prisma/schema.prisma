@@ -65,11 +65,16 @@ model Attendance {
   @@index([createdAt])
   @@index([checkInDate])
 
-  // NOTE: a partial unique index enforcing ONE active check-in per participant
-  // cannot be expressed in Prisma schema. It is created in migration
-  // 20260821000000_concurrency_safety:
-  //   CREATE UNIQUE INDEX "Attendance_participantId_checkedIn_key"
-  //     ON "Attendance"("participantId") WHERE "status" = 'CHECKED_IN';
+  // NOTE: partial unique indexes enforcing ONE active check-in per
+  // participant cannot be expressed in Prisma schema. They are created in
+  // raw SQL migrations:
+  //   20260821000000_concurrency_safety:
+  //     CREATE UNIQUE INDEX "Attendance_participantId_checkedIn_key"
+  //       ON "Attendance"("participantId") WHERE "status" = 'CHECKED_IN';
+  //   20260821010000_one_active_check_in_per_participant:
+  //     CREATE UNIQUE INDEX "Attendance_participantId_activeCheckout_key"
+  //       ON "Attendance"("participantId")
+  //       WHERE "checkInTime" IS NOT NULL AND "checkOutTime" IS NULL;
 }
 
 model AuditLog {

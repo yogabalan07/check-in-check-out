@@ -28,11 +28,29 @@ export class AttendanceService {
     const settings = await getHackathonSettings();
     const late = isLateCheckIn(now, settings.startTime, settings.timezone);
 
+    // Fast pre-check (indexed): reject early when an ACTIVE session already
+    // exists (checkInTime set, checkOutTime NULL). This is only an
+    // optimization — the partial unique indexes below remain the real guard.
+    const active = await prisma.attendance.findFirst({
+      where: {
+        participantId: participant.id,
+        status: 'CHECKED_IN',
+        checkOutTime: null,
+      },
+      select: { id: true },
+    });
+
+    if (active) {
+      throw new AppError('Participant already checked in', 409, 'ALREADY_CHECKED_IN');
+    }
+
     try {
-      // The partial unique index Attendance_participantId_checkedIn_key
-      // (participantId WHERE status = 'CHECKED_IN') makes the database the
+      // The partial unique indexes on "Attendance" make the database the
       // final guard: if two concurrent requests race for the same participant,
       // exactly one create succeeds and the other fails with P2002 -> 409.
+      //   Attendance_participantId_checkedIn_key: (participantId) WHERE status = 'CHECKED_IN'
+      //   Attendance_participantId_activeCheckout_key: (participantId) WHERE
+      //     "checkInTime" IS NOT NULL AND "checkOutTime" IS NULL
       const attendance = await prisma.$transaction(async (tx) => {
         const created = await tx.attendance.create({
           data: {
@@ -104,6 +122,8 @@ export class AttendanceService {
         where: {
           participantId: participant.id,
           status: 'CHECKED_IN',
+          // Active = checked in and never checked out.
+          checkOutTime: null,
         },
         select: {
           id: true,
@@ -128,6 +148,7 @@ export class AttendanceService {
         where: {
           id: existing.id,
           status: 'CHECKED_IN',
+          checkOutTime: null,
         },
         data: {
           checkOutDate: now,
