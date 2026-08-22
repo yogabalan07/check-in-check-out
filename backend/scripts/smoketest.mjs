@@ -82,6 +82,29 @@ async function main() {
   const co2 = await api('/attendance/check-out', { auth: false, method: 'POST', body: { registerNumber: reg } });
   check('duplicate check-out (409 NOT_CHECKED_IN)', co2.status === 409 && co2.data?.errorCode === 'NOT_CHECKED_IN');
 
+  // 6b. RE-CHECK-IN AFTER CHECKOUT — core business rule:
+  //     completed sessions must never block new check-ins; only an active
+  //     session (checkOutTime IS NULL / status CHECKED_IN) may.
+  const ciRe = await api('/attendance/check-in', { auth: false, method: 'POST', body: { registerNumber: reg } });
+  check('re-check-in after checkout (201)', ciRe.status === 201);
+  const ciReDup = await api('/attendance/check-in', { auth: false, method: 'POST', body: { registerNumber: reg } });
+  check('duplicate after re-check-in (409 ALREADY_CHECKED_IN)', ciReDup.status === 409 && ciReDup.data?.errorCode === 'ALREADY_CHECKED_IN');
+  const coRe = await api('/attendance/check-out', { auth: false, method: 'POST', body: { registerNumber: reg } });
+  check('second check-out (200)', coRe.status === 200);
+  const ciThird = await api('/attendance/check-in', { auth: false, method: 'POST', body: { registerNumber: reg } });
+  check('third check-in (201)', ciThird.status === 201);
+  const flowDetail = await api(`/participants/${pid}`);
+  const flowSessions = flowDetail.data?.data?.attendances || [];
+  check(
+    'history keeps all sessions (3 total)',
+    flowSessions.length === 3 &&
+      flowSessions.filter((a) => a.status === 'CHECKED_OUT' && a.checkOutTime).length === 2 &&
+      flowSessions.filter((a) => a.status === 'CHECKED_IN' && !a.checkOutTime).length === 1,
+    JSON.stringify(flowSessions.map((a) => ({ s: a.status, out: a.checkOutTime })))
+  );
+  // Close the open session so later list/report assertions see tidy data.
+  await api('/attendance/check-out', { auth: false, method: 'POST', body: { registerNumber: reg } });
+
   // 7. Attendance listing + filters
   const att = await api('/attendance?page=1&limit=10');
   check('attendance list', att.status === 200 && Array.isArray(att.data?.data));
