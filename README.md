@@ -1,93 +1,74 @@
 <div align="center">
 
 # 🎯 CLASS D HACKATHON
+## Smart Check-In / Check-Out Attendance System
 
-### ⚡ Smart Check-In / Check-Out Attendance System
+### 🚀 QR-Based • Real-Time • Secure • Scalable Attendance Management
 
 <p>
-A fast, QR-based attendance platform designed for managing  
-hackathon participants, halls, attendance sessions and reports.
+A complete digital attendance platform developed to automate
+participant movement and attendance management during hackathons.
 </p>
 
 <br>
 
 <a href="https://check-in-check-out-nhav.onrender.com">
-  <img src="https://img.shields.io/badge/🚀_LIVE_DEMO-Open_Application-00C853?style=for-the-badge" />
+<img src="https://img.shields.io/badge/🚀_LIVE_DEMO-OPEN_APPLICATION-00C853?style=for-the-badge"/>
 </a>
 
 <a href="https://github.com/yogabalan07/check-in-check-out">
-  <img src="https://img.shields.io/badge/💻_SOURCE-GitHub-181717?style=for-the-badge&logo=github" />
+<img src="https://img.shields.io/badge/💻_SOURCE_CODE-GITHUB-181717?style=for-the-badge&logo=github"/>
 </a>
 
 <a href="https://check-in-out-s0r8.onrender.com/api/health">
-  <img src="https://img.shields.io/badge/⚙️_API-Online-00C853?style=for-the-badge" />
+<img src="https://img.shields.io/badge/⚙️_BACKEND-ONLINE-00C853?style=for-the-badge"/>
 </a>
 
 </div>
 
-<br>
+---
+
+# 📸 Project Overview
 
 <div align="center">
 
-<img src="frontend/public/assets/class-d-hackathon.png" width="600" alt="Class D Hackathon">
+<img src="frontend/public/assets/class-d-hackathon.png"
+     alt="Class D Hackathon"
+     width="650"/>
 
 </div>
 
 ---
 
-## 🌐 Live System
+# 🧠 About The Project
 
-<table>
-<tr>
-<td align="center" width="50%">
+The **Class D Hackathon Check-In / Check-Out System** is a complete web-based attendance management platform developed to replace traditional manual attendance methods during hackathons and technical events.
 
-### 👨‍💻 Participant Portal
+During a large-scale event, manually recording participant attendance can create several problems:
 
-<a href="https://check-in-check-out-nhav.onrender.com">
+- Long queues at the entrance
+- Manual register maintenance
+- Duplicate attendance
+- Incorrect timestamps
+- Difficulty tracking participants inside halls
+- Difficulty identifying late arrivals
+- Difficulty identifying early departures
+- Time-consuming report generation
+- Difficulty handling hundreds of simultaneous participants
 
-**🚀 OPEN APPLICATION**
+This project solves these problems using a **QR-based digital attendance workflow**.
 
-</a>
-
-Scan QR → Enter Register Number → Check In / Check Out
-
-</td>
-
-<td align="center" width="50%">
-
-### ⚙️ Backend API
-
-<a href="https://check-in-out-s0r8.onrender.com">
-
-**🔗 OPEN API**
-
-</a>
-
-Node.js + Express + Prisma + PostgreSQL
-
-</td>
-</tr>
-</table>
-
----
-
-# ✨ What Is This?
-
-**Class D Hackathon Check-In / Check-Out** is a modern web-based attendance management system built to handle large numbers of participants during a hackathon.
-
-Instead of maintaining paper attendance sheets, participants simply:
+Participants only need to:
 
 ```text
-        📱 SCAN QR
-             │
-             ▼
-    📝 ENTER REGISTER NO
-             │
-             ▼
-       ✅ CHECK-IN
-             │
-             ▼
-       🏆 PARTICIPATE
-             │
-             ▼
-       🚪 CHECK-OUT
+📱 Scan QR
+     ↓
+📝 Enter Register Number
+     ↓
+✅ Check-In
+     ↓
+🏆 Participate
+     ↓
+📱 Scan Check-Out QR
+     ↓
+🚪 Check-Out
