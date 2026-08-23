@@ -51,7 +51,14 @@ const CheckOutPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">HACKATHON 2026</h1>
+          <div className="inline-block bg-white rounded-2xl shadow-lg px-6 py-4 mb-5">
+            <img
+              src="/assets/class-d-logo.png"
+              alt="Class D Hackathon Logo"
+              className="mx-auto w-full max-w-[220px] sm:max-w-[280px] h-auto object-contain"
+            />
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">CLASS D HACKATHON 2026</h1>
           {hall && <p className="text-purple-200 text-lg">{hall}</p>}
         </div>
 

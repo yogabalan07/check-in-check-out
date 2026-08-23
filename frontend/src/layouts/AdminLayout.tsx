@@ -29,7 +29,14 @@ const AdminLayout = () => {
         <button onClick={() => setSidebarOpen(true)} className="text-gray-600 p-1" aria-label="Open menu">
           <FiMenu className="w-6 h-6" />
         </button>
-        <h1 className="text-lg font-bold text-gray-800">Hackathon Admin</h1>
+        <div className="flex items-center gap-2 min-w-0">
+          <img
+            src="/assets/class-d-logo.png"
+            alt="Class D Hackathon Logo"
+            className="h-7 w-auto max-w-[110px] object-contain shrink-0"
+          />
+          <h1 className="text-base font-bold text-gray-800 truncate">Admin</h1>
+        </div>
         <div className="w-6" />
       </div>
 
@@ -45,9 +52,14 @@ const AdminLayout = () => {
             sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
         >
-          <div className="p-6 border-b shrink-0">
-            <h1 className="text-xl font-bold text-gray-800">Hackathon 2026</h1>
-            <p className="text-sm text-gray-500">Admin Panel</p>
+          <div className="px-5 py-4 border-b shrink-0 text-center">
+            <img
+              src="/assets/class-d-logo.png"
+              alt="Class D Hackathon Logo"
+              className="mx-auto h-9 sm:h-10 w-auto max-w-full object-contain mb-2"
+            />
+            <h1 className="text-base font-bold text-gray-800 leading-tight whitespace-nowrap">CLASS D HACKATHON</h1>
+            <p className="text-xs text-gray-500">Admin Panel</p>
           </div>
           <nav className="flex-1 overflow-y-auto p-4 space-y-1">
             {menuItems.map((item) => (

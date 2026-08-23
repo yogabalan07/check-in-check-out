@@ -60,11 +60,21 @@ const Dashboard = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <div className="flex items-center gap-3 min-w-0">
+          <img
+            src="/assets/class-d-logo.png"
+            alt="Class D Hackathon Logo"
+            className="h-10 sm:h-11 w-auto max-w-[160px] object-contain shrink-0"
+          />
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold leading-tight">Admin Dashboard</h1>
+            <p className="text-sm text-gray-500">Class D Hackathon</p>
+          </div>
+        </div>
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg text-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg text-sm shrink-0"
         >
           <FiRefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
