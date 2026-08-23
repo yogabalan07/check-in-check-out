@@ -31,9 +31,7 @@
 
 <div align="center">
 
-<img src="frontend/public/assets/class-d-hackathon.png"
-     alt="Class D Hackathon"
-     width="650"/>
+<img src="docs/class-d-logo.png" alt="Class D Hackathon Logo" width="650"/>
 
 </div>
 
