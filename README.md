@@ -40,6 +40,33 @@
 
 ---
 
+# 📑 Table of Contents
+
+- [Project Overview](#-project-overview)
+- [About The Project](#-about-the-project)
+- [Problem Statement](#-problem-statement)
+- [Solution](#-solution)
+- [Main Access Points](#-main-access-points)
+- [System Flowchart](#-system-flowchart)
+- [Participant Flowchart](#-participant-flowchart)
+- [Check-In Flowchart](#-check-in-flowchart)
+- [Check-Out Flowchart](#-check-out-flowchart)
+- [Admin Flowchart](#-admin-flowchart)
+- [System Architecture](#-system-architecture)
+- [Technology Stack](#-technology-stack)
+- [Admin Features](#-admin-panel-features)
+- [Participant Workflow](#-participant-workflow)
+- [Attendance Management](#-attendance-management)
+- [QR System](#-dynamic-qr-system)
+- [Security](#-security)
+- [Concurrency](#-concurrency-and-safety)
+- [Project Structure](#-project-structure)
+- [Deployment](#-deployment)
+- [Live Links](#-live-links--repository)
+- [Developer](#-developer-information)
+
+---
+
 # 📸 Project Overview
 
 <div align="center">
@@ -52,33 +79,51 @@
 
 # 🧠 About The Project
 
-The **Class D Hackathon Check-In / Check-Out System** is a complete web-based attendance management platform developed to replace traditional manual attendance methods during hackathons and technical events.
+The **Class D Hackathon Smart Check-In / Check-Out Attendance System** is a complete web-based attendance management platform designed to replace traditional manual attendance methods during hackathons, technical events, workshops, seminars, and other large-scale events.
 
-During a large-scale event, manually recording participant attendance can create several problems:
+The system uses **QR-based attendance**, allowing participants to quickly check in and check out using their mobile devices.
 
-- Long queues at the entrance
+The platform also provides administrators with a centralized dashboard to monitor attendance, manage participants, configure QR stations, and generate reports.
+
+---
+
+# ❗ Problem Statement
+
+Traditional attendance methods create several problems during large events:
+
+- Long queues at entrance gates
 - Manual register maintenance
-- Duplicate attendance
+- Duplicate attendance entries
 - Incorrect timestamps
-- Difficulty tracking participants inside halls
+- Difficulty tracking participants
 - Difficulty identifying late arrivals
 - Difficulty identifying early departures
+- Manual calculation of attendance
 - Time-consuming report generation
-- Difficulty handling hundreds of simultaneous participants
+- Difficulty handling hundreds of participants simultaneously
 
-This project solves these problems using a **QR-based digital attendance workflow**.
+---
 
-Participants only need to:
+# 💡 Solution
+
+The proposed system provides a **QR-based digital attendance platform**.
+
+Instead of manually writing attendance:
 
 ```text
-📱 Scan QR
-     ↓
-📝 Enter Register Number
-     ↓
-✅ Check-In
-     ↓
-🏆 Participate
-     ↓
-📱 Scan Check-Out QR
-     ↓
-🚪 Check-Out
+Participant
+     │
+     ▼
+Scan QR Code
+     │
+     ▼
+Enter Registration Number
+     │
+     ▼
+System Validates Participant
+     │
+     ▼
+Attendance Recorded
+     │
+     ▼
+Real-Time Admin Dashboard
